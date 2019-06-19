@@ -18,8 +18,8 @@ fun main(args: Array<String>) {
     fun canInsertBlack(cell: Int, length: Int): Boolean =
         cell + length <= cellSize && (cell until cell + length).none { white[it] }
 
-    fun canInsertWhite(cell: Int, length: Int): Boolean =
-        cell + length >= cellSize || (cell until cell + length).none { black[it] }
+    fun canInsertWhite(cell: Int): Boolean =
+        cell >= cellSize || !black[cell]
 
     val calc = mutableMapOf<Int, MutableMap<Int, Boolean>>()
 
@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
         var win = false
         val canInsert = group < groupSize
                 && canInsertBlack(cell, len[group])
-                && canInsertWhite(cell + len[group], 1)
+                && canInsertWhite(cell + len[group])
 
         if (canInsert
             && epicWin(group + 1, cell + len[group] + 1)
@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
                 canWhite[cell + len[group]] = true
         }
 
-        if (canInsertWhite(cell, 1) && epicWin(group, cell + 1)) {
+        if (canInsertWhite(cell) && epicWin(group, cell + 1)) {
                 win = true
                 canWhite[cell] = true
         }
