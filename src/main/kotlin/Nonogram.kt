@@ -44,14 +44,13 @@ data class Matrix(val nonogram: Nonogram, val cols: List<SimpleString>, val rows
     fun epic(): Matrix {
         val newCols = cols.map { it.epic() }
 
-        println()
+//        println()
 
         val newRows = rows.mapIndexed { r, sr ->
             val paint = sr.painted
             newCols.forEachIndexed { c, sc ->
                 sc.painted.forEachIndexed { color, l ->
-                    if (l[r])
-                        paint[color][c] = true
+                    paint[color][c] = paint[color][c] && l[r]
                 }
             }
             SimpleString(sr.groups, paint)
@@ -61,8 +60,7 @@ data class Matrix(val nonogram: Nonogram, val cols: List<SimpleString>, val rows
             val paint = sc.painted
             newRows.forEachIndexed { r, sr ->
                 sr.painted.forEachIndexed { color, l ->
-                    if (l[c])
-                        paint[color][r] = true
+                    paint[color][r] = paint[color][r] && l[c]
                 }
             }
             SimpleString(sc.groups, paint)
@@ -80,7 +78,7 @@ data class SimpleString(
 ) {
     constructor(groups: List<Int>, size: Int, colors: Int) : this(
         groups,
-        (0..colors).map { (0 until size).map { false }.toMutableList() }
+        (0..colors).map { (0 until size).map { true }.toMutableList() }
     )
 
     private val cellCount = painted.map { it.size }.max()!!
@@ -98,10 +96,10 @@ data class SimpleString(
 
         fun canInsertColor(color: Int, cell: Int, length: Int): Boolean =
             cell + length <= cellCount && (cell until cell + length)
-                .all { painted.filterIndexed { i, l -> i != color }.none { l -> l[it] } }
+                .all { painted[color][it] }
 
         fun canInsertWhite(cell: Int): Boolean =
-            cell >= cellCount || painted.drop(1).none { it[cell] }
+            cell >= cellCount || painted[0][cell]
 
         fun epicWin(group: Int = 0, cell: Int = 0): Boolean {
             if (cell >= cellCount)
@@ -140,18 +138,18 @@ data class SimpleString(
 
         epicWin(0, 0)
 
-        (0 until cellCount)
-            .forEach { ind ->
-                val l = canPainted.mapIndexed { it, l -> it to l[ind] }.filter { it.second }
-                if (l.size == 1)
-                    painted[l[0].first][ind] = true
-            }
+//        (0 until cellCount)
+//            .forEach { ind ->
+//                val l = canPainted.mapIndexed { it, l -> it to l[ind] }.filter { it.second }
+//                if (l.size == 1)
+//                    painted[l[0].first][ind] = true
+//            }
 
         val res = SimpleString(
             groups,
-            painted
+            canPainted
         )
-        println("$from -> $res")
+//        println("$from -> $res")
 
         return res
     }
@@ -159,6 +157,14 @@ data class SimpleString(
     override fun toString(): String {
         return (0 until painted[0].size)
             .map { i ->
+//                var a = 0
+//                var s = 1
+//                for (z in 1 until painted.size)
+//                {
+//                    if (painted[z][i]) a += s
+//                    s *= 2
+//                }
+//                if (a == 0) ' ' else '0' + a
                 val l = painted.mapIndexed { it, l -> it to l[i] }.filter { it.second }
                 when {
                     l.size > 1 || l.isEmpty() -> '?'
